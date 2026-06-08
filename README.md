@@ -16,6 +16,25 @@ A desktop application for managing your chess book collection. Built with Electr
 
 
 
+
+
+## 🚀 **EASIEST WAY: Download & Click to Run!**
+
+**No installation required!** Just download and open in your browser:
+
+1. **[Download ChessLibrary-Standalone.html](https://raw.githubusercontent.com/Hari-Shankar007/chess-books-/main/ChessLibrary-Standalone.html)** (Right-click → Save As)
+2. Double-click the downloaded file
+3. It opens in your browser - start adding books immediately!
+
+✨ **Features:**
+- Works offline in any browser
+- All data saved in your browser (LocalStorage)
+- Dark/Light theme toggle
+- Add, edit, delete, and search books
+- Beautiful card-based interface
+- Zero setup, zero dependencies
+
+---
 ## ⚡ Quick Download
 
 **Don't want to install Node.js?** Download the ready-to-use application:
