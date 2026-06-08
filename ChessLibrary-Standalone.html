@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Book Library - Standalone</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <style>
+        /* All CSS from the attached file will go here - compact version */
+        :root,:root[data-theme=light]{--bg:#f7f6f2;--surface:#f9f8f5;--surface-offset:#f3f0ec;--border:#d4d1ca;--text:#28251d;--text-muted:#7a7974;--text-inverse:#f9f8f4;--primary:#01696f;--primary-hover:#0c4e54;--shadow:0 4px 12px rgba(0,0,0,.08)}[data-theme=dark]{--bg:#171614;--surface:#1c1b19;--surface-offset:#1d1c1a;--border:#393836;--text:#cdccca;--text-muted:#797876;--text-inverse:#2b2a28;--primary:#4f98a3;--primary-hover:#227f8b;--shadow:0 4px 12px rgba(0,0,0,.3)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}h1{font-size:2rem;margin-bottom:1.5rem}button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:none}.container{max-width:1400px;margin:0 auto}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}.btn{padding:.5rem 1rem;background:var(--primary);color:var(--text-inverse);border-radius:8px;font-weight:600;transition:all .2s}.btn:hover{background:var(--primary-hover)}.btn-secondary{background:var(--surface-offset);color:var(--text);border:1px solid var(--border)}.search-bar{background:var(--surface-offset);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-bottom:1.5rem;display:flex;gap:.5rem}.search-bar input{flex:1;background:none;border:none;outline:none}.books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem}.book-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .3s;cursor:pointer}.book-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}.book-cover{height:160px;background:linear-gradient(135deg,#01696f,#014d52);display:flex;align-items:center;justify-content:center;font-size:3rem}.book-body{padding:1rem}.book-title{font-size:1.1rem;font-weight:600;margin-bottom:.5rem}.book-author{font-size:.9rem;color:var(--text-muted);margin-bottom:.75rem}.book-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}.tag{padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600}.tag-beginner{background:#d4dfcc;color:#437a22}.tag-intermediate{background:#e9e0c6;color:#d19900}.tag-advanced{background:#ead2e4;color:#a12c7b}.tag-opening{background:#c6d8e4;color:#006494}.tag-middlegame{background:#dacfde;color:#7a39bb}.tag-endgame{background:#e9e0c6;color:#d19900}.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-content{background:var(--surface);border-radius:12px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:2rem}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}.form-group{margin-bottom:1.5rem}.form-label{display:block;font-weight:600;margin-bottom:.5rem}.form-input{width:100%;padding:.75rem;background:var(--surface-offset);border:1px solid var(--border);border-radius:8px;outline:none}.form-input:focus{border-color:var(--primary)}textarea.form-input{min-height:80px;resize:vertical}.empty-state{text-align:center;padding:4rem 2rem;color:var(--text-muted)}@media(max-width:768px){.books-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Chess Book Library</h1>
+            <div style="display:flex;gap:1rem">
+                <button class="btn" onclick="toggleTheme()">🌙/☀️</button>
+                <button class="btn" id="addBtn">+ Add Book</button>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search books..." oninput="renderBooks()">
+        </div>
+
+        <div id="statsRow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem"></div>
+
+        <div id="booksGrid" class="books-grid"></div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Book</h2>
+                <button onclick="closeModal()" style="font-size:1.5rem">×</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Title *</label>
+                <input type="text" id="title" class="form-input" placeholder="e.g., My System">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Author</label>
+                <input type="text" id="author" class="form-input" placeholder="e.g., Aaron Nimzowitsch">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Level</label>
+                <select id="level" class="form-input">
+                    <option value="">Select...</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phase</label>
+                <select id="phase" class="form-input">
+                    <option value="">Select...</option>
+                    <option value="Opening">Opening</option>
+                    <option value="Middlegame">Middlegame</option>
+                    <option value="Endgame">Endgame</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea id="notes" class="form-input" placeholder="Your notes..."></textarea>
+            </div>
+            <div style="display:flex;gap:1rem;justify-content:flex-end">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn" onclick="saveBook()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let books = JSON.parse(localStorage.getItem('chessBooks') || '[]');
+        let editId = null;
+
+        // Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'dark';
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Modal
+        const modal = document.getElementById('modal');
+        document.getElementById('addBtn').onclick = () => {
+            editId = null;
+            document.getElementById('modalTitle').textContent = 'Add Book';
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('level').value = '';
+            document.getElementById('phase').value = '';
+            document.getElementById('notes').value = '';
+            modal.classList.add('open');
+        };
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+
+        function saveBook() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) return alert('Title is required!');
+
+            const book = {
+                id: editId || Date.now(),
+                title,
+                author: document.getElementById('author').value.trim(),
+                level: document.getElementById('level').value,
+                phase: document.getElementById('phase').value,
+                notes: document.getElementById('notes').value.trim(),
+                createdAt: editId ? books.find(b => b.id === editId)?.createdAt : Date.now()
+            };
+
+            if (editId) {
+                books = books.map(b => b.id === editId ? book : b);
+            } else {
+                books.unshift(book);
+            }
+
+            localStorage.setItem('chessBooks', JSON.stringify(books));
+            renderBooks();
+            closeModal();
+        }
+
+        function deleteBook(id) {
+            if (!confirm('Delete this book?')) return;
+            books = books.filter(b => b.id !== id);
+            localStorage.setItem('chessBooks', JSON.stringify(books));
+            renderBooks();
+        }
+
+        function editBook(id) {
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+            editId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Book';
+            document.getElementById('title').value = book.title;
+            document.getElementById('author').value = book.author || '';
+            document.getElementById('level').value = book.level || '';
+            document.getElementById('phase').value = book.phase || '';
+            document.getElementById('notes').value = book.notes || '';
+            modal.classList.add('open');
+        }
+
+        // Render
+        function renderBooks() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = books.filter(b =>
+                b.title.toLowerCase().includes(search) ||
+                (b.author || '').toLowerCase().includes(search) ||
+                (b.notes || '').toLowerCase().includes(search)
+            );
+
+            const grid = document.getElementById('booksGrid');
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><h3>No books found</h3><p>Add your first chess book to get started!</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(b => `
+                <div class="book-card">
+                    <div class="book-cover">&#9820;</div>
+                    <div class="book-body">
+                        <div class="book-title">${escapeHtml(b.title)}</div>
+                        ${b.author ? `<div class="book-author">by ${escapeHtml(b.author)}</div>` : ''}
+                        <div class="book-tags">
+                            ${b.level ? `<span class="tag tag-${b.level.toLowerCase()}">${b.level}</span>` : ''}
+                            ${b.phase ? `<span class="tag tag-${b.phase.toLowerCase()}">${b.phase}</span>` : ''}
+                        </div>
+                        ${b.notes ? `<div style="font-size:.85rem;color:var(--text-muted);margin-top:.75rem;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escapeHtml(b.notes)}</div>` : ''}
+                        <div style="display:flex;gap:.5rem;margin-top:1rem">
+                            <button class="btn btn-secondary" style="flex:1;font-size:.85rem;padding:.4rem" onclick="editBook(${b.id})">Edit</button>
+                            <button class="btn btn-secondary" style="flex:1;font-size:.85rem;padding:.4rem;color:#a12c7b" onclick="deleteBook(${b.id})">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Stats
+            const stats = document.getElementById('statsRow');
+            stats.innerHTML = `
+                <div style="background:var(--surface);padding:1rem;border-radius:8px;border:1px solid var(--border)">
+                    <div style="font-size:1.5rem;font-weight:600">${books.length}</div>
+                    <div style="font-size:.85rem;color:var(--text-muted)">Total Books</div>
+                </div>
+                <div style="background:var(--surface);padding:1rem;border-radius:8px;border:1px solid var(--border)">
+                    <div style="font-size:1.5rem;font-weight:600">${books.filter(b => b.level === 'Beginner').length}</div>
+                    <div style="font-size:.85rem;color:var(--text-muted)">Beginner</div>
+                </div>
+                <div style="background:var(--surface);padding:1rem;border-radius:8px;border:1px solid var(--border)">
+                    <div style="font-size:1.5rem;font-weight:600">${books.filter(b => b.level === 'Intermediate').length}</div>
+                    <div style="font-size:.85rem;color:var(--text-muted)">Intermediate</div>
+                </div>
+                <div style="background:var(--surface);padding:1rem;border-radius:8px;border:1px solid var(--border)">
+                    <div style="font-size:1.5rem;font-weight:600">${books.filter(b => b.level === 'Advanced').length}</div>
+                    <div style="font-size:.85rem;color:var(--text-muted)">Advanced</div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial render
+        renderBooks();
+
+        // Close modal on Escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Close modal on outside click
+        modal.addEventListener('click', e => {
+            if (e.target === modal) closeModal();
+        });
+    </script>
+</body>
+</html>
