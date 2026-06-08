@@ -14,8 +14,29 @@ A desktop application for managing your chess book collection. Built with Electr
 - **Edit & Delete**: Modify book information or remove books from your library
 - **Persistent Data**: All library data saved in `library.json` - nothing vanishes on reload
 
-## Installation
 
+
+## ⚡ Quick Download
+
+**Don't want to install Node.js?** Download the ready-to-use application:
+
+### Windows
+- Download: `Chess-Book-Library-Setup.exe` from [Latest Release](https://github.com/Hari-Shankar007/chess-books-/releases/latest)
+- Double-click the installer and follow the prompts
+- Launch from Start Menu
+
+### Mac
+- Download: `Chess-Book-Library.dmg` from [Latest Release](https://github.com/Hari-Shankar007/chess-books-/releases/latest)
+- Open the DMG file
+- Drag the app to Applications folder
+
+### Linux
+- Download: `Chess-Book-Library.AppImage` from [Latest Release](https://github.com/Hari-Shankar007/chess-books-/releases/latest)
+- Make it executable: `chmod +x Chess-Book-Library.AppImage`
+- Run: `./Chess-Book-Library.AppImage`
+
+---
+## Installation (For Developers)
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm (comes with Node.js)
