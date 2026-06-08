@@ -23,7 +23,12 @@
       "main.js",
       "preload.js",
       "renderer/**"
+            "icon": "renderer/icon.png",
     ]
+          "directories": {
+        "buildResources": "build",
+        "output": "dist"
+      }
   },
   "devDependencies": {
     "electron": "^30.0.0",
