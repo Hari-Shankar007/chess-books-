@@ -22,9 +22,9 @@
     "files": [
       "main.js",
       "preload.js",
-      "renderer/**"    ]
-          "directories": {
-        "buildResources": "build",
+      "renderer/**"
+    ],
+    "directories": {        "buildResources": "build",
         "output": "dist"
       }
   },
