@@ -74,6 +74,30 @@ ipcMain.handle('pdf:choose', async (e, bookId) => {
 // IPC: save cover image
 ipcMain.handle('cover:save', async (e, bookId, dataUrl) => {
   ensureDirs();
+
+  // IPC: bulk upload multiple PDFs
+ipcMain.handle('pdf:chooseBulk', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select PDF Books (Multiple)',
+    filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+    properties: ['openFile', 'multiSelections']
+  });
+  if (canceled || !filePaths.length) return [];
+  ensureDirs();
+  
+  const results = [];
+  for (const src of filePaths) {
+    const bookId = Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    const dest = path.join(BOOKS_DIR, bookId + '.pdf');
+    fs.copyFileSync(src, dest);
+    results.push({
+      bookId,
+      filePath: dest,
+      originalName: path.basename(src)
+    });
+  }
+  return results;
+});
   const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
   const dest = path.join(COVERS_DIR, bookId + '.jpg');
   fs.writeFileSync(dest, Buffer.from(base64, 'base64'));
